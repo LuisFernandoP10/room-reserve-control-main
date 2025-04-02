@@ -1,10 +1,10 @@
 
 import { Block, Reservation, ReservationFormData, Resource, Room, RoomFilters, BlockStatistic, RoomStatistic, TimeSlotStatistic } from "../types";
 
-// Base URL for the API - would be replaced with actual API URL
-const API_BASE_URL = "https://api.unievangelica.edu/rooms";
+// Base URL para a API - substitua pela URL real da sua API quando disponível
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
-// Mock data for development - this would be replaced with actual API calls
+// Dados mockados para desenvolvimento - serão usados como fallback se a API estiver indisponível
 const mockBlocks: Block[] = [
   { id: "1", name: "Bloco A" },
   { id: "2", name: "Bloco B" },
@@ -89,56 +89,73 @@ const mockBlockStats: BlockStatistic[] = [
   { blockName: "Bloco D", usageCount: 32, percentage: 13 },
 ];
 
-// API client functions with error handling
+// Cliente de API com chamadas reais e fallback para dados mockados
 const apiClient = {
-  // Blocks
+  // Função auxiliar para fazer requisições com tratamento de erro
+  async fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erro na requisição: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error(`Erro ao acessar ${endpoint}:`, error);
+      throw error;
+    }
+  },
+
+  // Blocos
   getBlocks: async (): Promise<Block[]> => {
     try {
-      // This would be replaced with an actual API call
-      // const response = await fetch(`${API_BASE_URL}/blocks`);
-      // if (!response.ok) throw new Error('Failed to fetch blocks');
-      // return await response.json();
-      
-      // Using mock data for now
+      // Tenta fazer a chamada real para a API
+      return await apiClient.fetchAPI<Block[]>('blocks');
+    } catch (error) {
+      console.warn("Fallback para dados mockados de blocos:", error);
+      // Usa dados mockados como fallback
       return new Promise((resolve) => {
         setTimeout(() => resolve(mockBlocks), 300);
       });
-    } catch (error) {
-      console.error("Error fetching blocks:", error);
-      throw error;
     }
   },
   
-  // Resources
+  // Recursos
   getResources: async (): Promise<Resource[]> => {
     try {
-      // const response = await fetch(`${API_BASE_URL}/resources`);
-      // if (!response.ok) throw new Error('Failed to fetch resources');
-      // return await response.json();
-      
+      return await apiClient.fetchAPI<Resource[]>('resources');
+    } catch (error) {
+      console.warn("Fallback para dados mockados de recursos:", error);
       return new Promise((resolve) => {
         setTimeout(() => resolve(mockResources), 300);
       });
-    } catch (error) {
-      console.error("Error fetching resources:", error);
-      throw error;
     }
   },
   
-  // Rooms
+  // Salas
   getRooms: async (filters: RoomFilters = {}): Promise<Room[]> => {
     try {
-      // const queryParams = new URLSearchParams();
-      // if (filters.block) queryParams.append('block', filters.block);
-      // if (filters.capacity) queryParams.append('capacity', filters.capacity.toString());
-      // if (filters.resources?.length) filters.resources.forEach(r => queryParams.append('resources', r));
-      // if (filters.query) queryParams.append('query', filters.query);
-      // if (filters.available !== undefined) queryParams.append('available', filters.available.toString());
+      const queryParams = new URLSearchParams();
+      if (filters.block) queryParams.append('block', filters.block);
+      if (filters.capacity) queryParams.append('capacity', filters.capacity.toString());
+      if (filters.resources?.length) filters.resources.forEach(r => queryParams.append('resources', r));
+      if (filters.query) queryParams.append('query', filters.query);
+      if (filters.available !== undefined) queryParams.append('available', filters.available.toString());
       
-      // const response = await fetch(`${API_BASE_URL}/rooms?${queryParams}`);
-      // if (!response.ok) throw new Error('Failed to fetch rooms');
-      // return await response.json();
+      const queryString = queryParams.toString();
+      const endpoint = `rooms${queryString ? `?${queryString}` : ''}`;
       
+      return await apiClient.fetchAPI<Room[]>(endpoint);
+    } catch (error) {
+      console.warn("Fallback para dados mockados de salas:", error);
+      // Usa a lógica existente como fallback
       return new Promise((resolve) => {
         setTimeout(() => {
           let filteredRooms = [...mockRooms];
@@ -174,45 +191,33 @@ const apiClient = {
           resolve(filteredRooms);
         }, 500);
       });
-    } catch (error) {
-      console.error("Error fetching rooms:", error);
-      throw error;
     }
   },
   
-  // Reservations
+  // Reservas
   getReservations: async (): Promise<Reservation[]> => {
     try {
-      // const response = await fetch(`${API_BASE_URL}/reservations`);
-      // if (!response.ok) throw new Error('Failed to fetch reservations');
-      // return await response.json();
-      
+      return await apiClient.fetchAPI<Reservation[]>('reservations');
+    } catch (error) {
+      console.warn("Fallback para dados mockados de reservas:", error);
       return new Promise((resolve) => {
         setTimeout(() => resolve(mockReservations), 300);
       });
-    } catch (error) {
-      console.error("Error fetching reservations:", error);
-      throw error;
     }
   },
   
   createReservation: async (data: ReservationFormData): Promise<Reservation> => {
     try {
-      // const response = await fetch(`${API_BASE_URL}/reservations`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(data),
-      // });
-      
-      // if (!response.ok) throw new Error('Failed to create reservation');
-      // return await response.json();
-      
+      return await apiClient.fetchAPI<Reservation>('reservations', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.warn("Fallback para criação simulada de reservas:", error);
       return new Promise((resolve) => {
         setTimeout(() => {
           const room = mockRooms.find(r => r.id === data.roomId);
-          if (!room) throw new Error('Room not found');
+          if (!room) throw new Error('Sala não encontrada');
           
           const newReservation: Reservation = {
             id: String(mockReservations.length + 1),
@@ -223,27 +228,23 @@ const apiClient = {
             startTime: data.startTime,
             endTime: data.endTime,
             purpose: data.purpose,
-            createdBy: "Prof. Silva" // This would come from the authenticated user
+            createdBy: "Prof. Silva" // Isso viria do usuário autenticado
           };
           
           mockReservations.push(newReservation);
           resolve(newReservation);
         }, 800);
       });
-    } catch (error) {
-      console.error("Error creating reservation:", error);
-      throw error;
     }
   },
   
   deleteReservation: async (id: string): Promise<void> => {
     try {
-      // const response = await fetch(`${API_BASE_URL}/reservations/${id}`, {
-      //   method: 'DELETE',
-      // });
-      
-      // if (!response.ok) throw new Error('Failed to delete reservation');
-      
+      await apiClient.fetchAPI<void>(`reservations/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      console.warn("Fallback para exclusão simulada de reservas:", error);
       return new Promise((resolve) => {
         setTimeout(() => {
           const index = mockReservations.findIndex(r => r.id === id);
@@ -253,55 +254,40 @@ const apiClient = {
           resolve();
         }, 500);
       });
-    } catch (error) {
-      console.error("Error deleting reservation:", error);
-      throw error;
     }
   },
   
-  // Statistics
+  // Estatísticas
   getRoomStatistics: async (): Promise<RoomStatistic[]> => {
     try {
-      // const response = await fetch(`${API_BASE_URL}/statistics/rooms`);
-      // if (!response.ok) throw new Error('Failed to fetch room statistics');
-      // return await response.json();
-      
+      return await apiClient.fetchAPI<RoomStatistic[]>('statistics/rooms');
+    } catch (error) {
+      console.warn("Fallback para dados mockados de estatísticas de salas:", error);
       return new Promise((resolve) => {
         setTimeout(() => resolve(mockRoomStats), 500);
       });
-    } catch (error) {
-      console.error("Error fetching room statistics:", error);
-      throw error;
     }
   },
   
   getTimeSlotStatistics: async (): Promise<TimeSlotStatistic[]> => {
     try {
-      // const response = await fetch(`${API_BASE_URL}/statistics/timeslots`);
-      // if (!response.ok) throw new Error('Failed to fetch time slot statistics');
-      // return await response.json();
-      
+      return await apiClient.fetchAPI<TimeSlotStatistic[]>('statistics/timeslots');
+    } catch (error) {
+      console.warn("Fallback para dados mockados de estatísticas de horários:", error);
       return new Promise((resolve) => {
         setTimeout(() => resolve(mockTimeSlotStats), 500);
       });
-    } catch (error) {
-      console.error("Error fetching time slot statistics:", error);
-      throw error;
     }
   },
   
   getBlockStatistics: async (): Promise<BlockStatistic[]> => {
     try {
-      // const response = await fetch(`${API_BASE_URL}/statistics/blocks`);
-      // if (!response.ok) throw new Error('Failed to fetch block statistics');
-      // return await response.json();
-      
+      return await apiClient.fetchAPI<BlockStatistic[]>('statistics/blocks');
+    } catch (error) {
+      console.warn("Fallback para dados mockados de estatísticas de blocos:", error);
       return new Promise((resolve) => {
         setTimeout(() => resolve(mockBlockStats), 500);
       });
-    } catch (error) {
-      console.error("Error fetching block statistics:", error);
-      throw error;
     }
   }
 };
