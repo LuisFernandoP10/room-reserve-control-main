@@ -53,8 +53,4 @@ Este projeto é construído com:
 - shadcn-ui
 - Tailwind CSS
 
-## Como posso implantar este projeto?
-
-Simplesmente abra o [Lovable](https://lovable.dev/projects/32669444-9b24-43f5-bd58-e6d75402c0ea) e clique em Compartilhar -> Publicar.
-
 ## Utilizei ajuda do  GPT , DEEPSEEK e LOVABLE(Especialmente), tentei fazer sozinho mas o tailwind dava mil e um problemas.
