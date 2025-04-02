@@ -25,6 +25,8 @@ npm i
 
 # Passo 4: Inicie o servidor de desenvolvimento com auto-recarregamento e uma prévia instantânea.
 npm run dev
+
+# Passo 5:   Aperte o ➜  Local:   http://localhost:xxxx/
 ```
 
 **Edite um arquivo diretamente no GitHub**
