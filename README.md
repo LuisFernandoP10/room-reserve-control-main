@@ -1,5 +1,3 @@
-# room-reserve-control-main
- 
 ## Informações do projeto
 
 ## Como posso editar este código?
@@ -20,6 +18,7 @@ git clone <SUA_URL_GIT>
 
 # Passo 2: Navegue até o diretório do projeto.
 cd <NOME_DO_SEU_PROJETO>
+cd room-reserve-control-main\room-reserve-control-main
 
 # Passo 3: Instale as dependências necessárias.
 npm i
@@ -56,4 +55,4 @@ Este projeto é construído com:
 
 Simplesmente abra o [Lovable](https://lovable.dev/projects/32669444-9b24-43f5-bd58-e6d75402c0ea) e clique em Compartilhar -> Publicar.
 
-## A parte do backend ainda não está implementada. Tentei mas não foi. Utilizei ajuda do  GPT , DEEPSEEK e LOVABLE
+## Utilizei ajuda do  GPT , DEEPSEEK e LOVABLE(Especialmente), tentei fazer sozinho mas o tailwind dava mil e um problemas.
